@@ -182,4 +182,16 @@ db.users.find({
   } 
 })
 
+// $regex 正则查询，多用于模糊匹配
+const { keyword } = ctx.request.query // 参数
+const reg = new RegExp(keyword, 'i') // 不区分大小写
+const result = await User.find(
+  {
+    $or : [ // 多条件，数组
+      {nick : {$regex : reg}},
+      {email : {$regex : reg}}
+    ]
+  }
+)
+
 ```
