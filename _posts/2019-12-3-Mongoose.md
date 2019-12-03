@@ -21,15 +21,18 @@ module.exports = app => {
   // new Schema 第一个对象是 model，第二个对象是设置
   const UserSchema = new Schema({
     name: { type: String },
-    account: { type: String, unique: true }, // 唯一字段，即该字段不能重复
+    // 唯一字段，即该字段不能重复
+    account: { type: String, unique: true }, 、
     password: { type: String },
     remark: { type: String },
     status: { type: Number },
     create_date: { type: Date, default: Date.now },
     update_date: { type: Date, default: Date.now },
   }, {
-    usePushEach: true, // 支持旧版的 $pushAll
-    timestamps: { createdAt: 'create_date', updatedAt: 'update_date' }, // 该设置会在文档更新和创建的时候自动更新 create_date 和 update_date 字段的值。
+    // 支持旧版的 $pushAll
+    usePushEach: true,
+    // 该设置会在文档更新和创建的时候自动更新 create_date 和 update_date 字段的值。
+    timestamps: { createdAt: 'create_date', updatedAt: 'update_date' },
   });
 
   return conn.model('User', UserSchema);
@@ -37,26 +40,27 @@ module.exports = app => {
 
 ```
 > 常用方法。
-Model.deleteMany()
-Model.deleteOne()
-Model.find()
-Model.findById()
-Model.findByIdAndDelete()
-Model.findByIdAndRemove()
-Model.findByIdAndUpdate()
-Model.findOne()
-Model.findOneAndDelete()
-Model.findOneAndRemove()
-Model.findOneAndReplace()
-Model.findOneAndUpdate()
-Model.replaceOne()
-Model.updateMany()
-Model.updateOne()
+Model.deleteMany() 
+Model.deleteOne() 
+Model.find() 
+Model.findById() 
+Model.findByIdAndDelete() 
+Model.findByIdAndRemove() 
+Model.findByIdAndUpdate() 
+Model.findOne() 
+Model.findOneAndDelete() 
+Model.findOneAndRemove() 
+Model.findOneAndReplace() 
+Model.findOneAndUpdate() 
+Model.replaceOne() 
+Model.updateMany() 
+Model.updateOne() 
 
 
 <h4>增</h4>
 
 ```js
+// 缺少某些字段也能创建成功，但唯独不能缺少 account，因为它是 unique: true
 const result = await this.ctx.model.AuthUser.create(
   {
     name: 'px',
@@ -68,12 +72,15 @@ const result = await this.ctx.model.AuthUser.create(
       .digest('hex'),,
   }
 );
-// 缺少某些字段也能创建成功，但唯独不能缺少 account
 ```
 
 <h4>删</h4>
 
 ```js
+/* 
+* mongoDB 会为每一条数据自动生成 _id 字段，它是唯一而且按照时间戳生成，
+* 所以删除的时候可以通过查找唯一的 _id 删除。
+*/
 try {
   await this.ctx.model.AuthUser.remove(
     { _id: '5ae18d0efbbe77641966cb60' },
@@ -82,19 +89,25 @@ try {
   this.ctx.logger.error(err.message);
   return '';
 }
-// mongoDB 会未每一条数据自动生成 _id 字段，它是唯一而且按照时间戳生成，所以删除的时候可以通过查找唯一的 _id 删除。
 ```
 
 <h4>改</h4>
 
 ```js
 try {
-  return await this.ctx.model.AuthGroup.findOneAndUpdate({ _id: '5ae18d0efbbe77641966cb60' }, // 第一个为查询参数对象 query
-  newData, // 第二个为更新的对象
-  { // 第三个为设置
-    new: true, // newData 里的属性，如果旧数据没有，则会新增该属性。
-    runValidators: true, // 默认 false，如果该 model 定义了校验函数，则会执行校验
-  }).exec();
+  // 第一个为查询参数对象 query
+  return await this.ctx.model.AuthGroup.findOneAndUpdate(
+    { _id: '5ae18d0efbbe77641966cb60' },
+    // 第二个为更新的对象
+    newData,
+    // 第三个为设置
+    {
+      // newData 里的属性，如果旧数据没有，则会新增该属性。
+      new: true,
+      // 默认 false，如果该 model 定义了校验函数，则会执行校验
+      runValidators: true,
+    }
+  ).exec();
 } catch (err) {
   this.ctx.logger.error(err.message);
   return '';
@@ -106,15 +119,20 @@ try {
 ```js
 const pageNo = 1;
 const pageSize = 10;
-const ids = ['5ae18d0efbbe77641966cb60', '5ae18d0efbbe77641966cb61'];
+const ids = [
+  '5ae18d0efbbe77641966cb60',
+  '5ae18d0efbbe77641966cb61'
+];
 return ({
   list: await this.ctx.model.AuthUser.find({
     _id: { $in: ids },
   })
     .skip((pageNo - 1) * pageSize)
-    .sort({ _id: -1 }) // 按照时间倒序排序
+    // 按照时间倒序排序
+    .sort({ _id: -1 })
     .limit(Number(pageSize))
-    .select('avatar account mobile') // 筛选需要的字段
+    // 筛选需要的字段
+    .select('avatar account mobile')
     .exec(),
   total: await this.ctx.model.AuthUser.find(query).countDocuments(),
 });
@@ -123,7 +141,10 @@ return ({
 <h4>高级查询</h4>
 
 ```js
-// $all 这个操作符跟 SQL 语法的 in 类似，但不同的是, in 只需满足[]内的某一个值即可, 而 $all 必须满足[]内的所有值
+/* 
+* $all 这个操作符跟 SQL 语法的 in 类似，但不同的是,
+*  in 只需满足[]内的某一个值即可, 而 $all 必须满足[]内的所有值
+*/
 await db.store.find({foods : {$all : ['banana', 'apple']}})
 
 // 查询所有存在age 字段的记录
@@ -134,24 +155,25 @@ db.users.find({name: {$exists: false}});
 
 // $in 包含
 // $nin 不包含
-
 // 小于 $lt
 // 小于或等于 $lte
 // 大于 $gt
 // 大于或等于 $gte
 // 不等于 $ne
-
 // 或 $or
+
+// likes > 50 && (age === 20 || name === 'px')
 db.users.find({
   likes: { $gt: 50 },
   $or: [
     {age: 20}, {name: 'px'}
   ]
-}) // likes > 50 && (age === 20 || name === 'px')
+})
 
 
 // $size 数组元素个数, 可以用它查询特定长度的数组
-db.users.find({favorite_number: {$size: 3}}) // favorite_number.length === 3
+// favorite_number.length === 3
+db.users.find({favorite_number: {$size: 3}})
 
 // $query 查询函数返回布尔值，使用这个方法会把文档转为 JavaScript 对象，会稍微影响性能
 db.users.find({
