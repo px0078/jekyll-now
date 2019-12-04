@@ -171,10 +171,6 @@ db.users.find({
 })
 
 
-// $size 数组元素个数, 可以用它查询特定长度的数组
-// favorite_number.length === 3
-db.users.find({favorite_number: {$size: 3}})
-
 // $query 查询函数返回布尔值，使用这个方法会把文档转为 JavaScript 对象，会稍微影响性能
 db.users.find({
   $query: (obj) => {
@@ -193,5 +189,42 @@ const result = await User.find(
     ]
   }
 )
+
+```
+
+<h4>数组操作（Array Update Operators）</h4>
+
+```js
+// 文档地址 https://docs.mongodb.com/manual/reference/operator/update-array/
+
+/* 
+* $size 数组元素个数, 可以用它查询特定长度的数组
+* favorite_number.length === 3
+*/ 
+db.users.find({favorite_number: {$size: 3}})
+
+$pop
+/*
+* 
+* The $pop operator removes the first or last element of an array. 
+* Pass $pop a value of -1 to remove the first element of an array and 1 to remove the last element in an array.
+*/
+
+$pull
+/*
+* The $pull operator removes from an existing array all instances of a value or values that match a specified condition.
+*/
+// 删除用户组集合中与此用户相关的数据
+this.ctx.model.AuthGroup.updateMany(
+  {},
+  {
+    $pull: { users: 'userId' },
+  },
+);
+
+$push
+/*
+* The $push operator appends a specified value to an array.
+*/
 
 ```
