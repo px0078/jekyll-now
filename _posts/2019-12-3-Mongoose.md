@@ -215,10 +215,11 @@ $pull
 * The $pull operator removes from an existing array all instances of a value or values that match a specified condition.
 */
 // 删除用户组集合中与此用户相关的数据
-this.ctx.model.AuthGroup.updateMany(
+// 不加 await ，该语句或不执行（可能因为进程已结束）
+await this.ctx.model.AuthGroup.updateMany(
   {},
   {
-    $pull: { users: 'userId' },
+    $pull: { users: { $in: ['userId'] } },
   },
 );
 
