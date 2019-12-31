@@ -119,14 +119,9 @@ try {
 ```js
 const pageNo = 1;
 const pageSize = 10;
-const ids = [
-  '5ae18d0efbbe77641966cb60',
-  '5ae18d0efbbe77641966cb61'
-];
+const query = {};
 return ({
-  list: await this.ctx.model.AuthUser.find({
-    _id: { $in: ids },
-  })
+  list: await this.ctx.model.AuthUser.find(query)
     .skip((pageNo - 1) * pageSize)
     // 按照时间倒序排序
     .sort({ _id: -1 })
